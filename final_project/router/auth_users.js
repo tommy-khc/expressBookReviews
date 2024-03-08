@@ -8,6 +8,12 @@ let users = [];
 const isValid = (username) => {
   //returns boolean
   //write code to check is the username is valid
+  for (let user of users) {
+    if (user.username === username) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const authenticatedUser = (username, password) => {
