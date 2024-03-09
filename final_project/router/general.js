@@ -30,7 +30,7 @@ public_users.get("/", function (req, res) {
   });
   promise.then(
     (books) => {
-      if (books.length === 0) {
+      if (Object.keys(books).length === 0) {
         return res.status(404).json({ message: "No books found" });
       }
       return res.send(books);
@@ -43,12 +43,30 @@ public_users.get("/", function (req, res) {
 
 // Get book details based on ISBN from books
 public_users.get("/isbn/:isbn", function (req, res) {
-  const isbn = req.params.isbn;
-  if (isbn > 0 && isbn <= Object.keys(books).length) {
-    return res.send(books[isbn - 1]);
-  } else {
-    return res.status(404).json({ message: "Invalid ISBN" });
-  }
+  promise = new Promise((resolve, reject) => {
+    try {
+      const isbn = req.params.isbn;
+      if (isbn > 0 && isbn <= Object.keys(books).length) {
+        resolve(books[isbn]);
+      } else {
+        throw Error("Invalid ISBN");
+      }
+    } catch (err) {
+      reject(err);
+    }
+  });
+  promise.then(
+    (bookdetails) => {
+      return res.send(bookdetails);
+    },
+    (err) => {
+      if (err.message === "Invalid ISBN") {
+        return res.status(404).json({ message: "Invalid ISBN" });
+      } else {
+        return res.status(500).json({ message: err.message });
+      }
+    }
+  );
 });
 
 // Get book details based on author
@@ -87,7 +105,7 @@ public_users.get("/title/:title", function (req, res) {
 public_users.get("/review/:isbn", function (req, res) {
   const isbn = req.params.isbn;
   if (isbn > 0 && isbn <= Object.keys(books).length) {
-    return res.send(books[isbn - 1].reviews);
+    return res.send(books[isbn].reviews);
   } else {
     return res.status(404).json({ message: "Invalid ISBN" });
   }

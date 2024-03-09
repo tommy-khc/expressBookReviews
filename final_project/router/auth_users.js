@@ -69,13 +69,13 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
   if (isbn > 0 && isbn <= Object.keys(books).length) {
     // Check if the user has already reviewed the book
-    if (books[isbn - 1].reviews[username]) {
+    if (books[isbn].reviews[username]) {
       // Update the existing review
-      books[isbn - 1].reviews[username] = review;
+      books[isbn].reviews[username] = review;
       return res.status(200).json({ message: "Review updated successfully" });
     } else {
       // Add a new review
-      books[isbn - 1].reviews[username] = review;
+      books[isbn].reviews[username] = review;
       return res.status(200).json({ message: "Review added successfully" });
     }
   } else {
@@ -87,8 +87,8 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
   const { isbn } = req.params;
   const username = req.session.authorization.username;
   if (isbn > 0 && isbn <= Object.keys(books).length) {
-    if (books[isbn - 1].reviews[username]) {
-      delete books[isbn - 1].reviews[username];
+    if (books[isbn].reviews[username]) {
+      delete books[isbn].reviews[username];
       return res.status(200).json({ message: "Review deleted successfully" });
     } else {
       return res
