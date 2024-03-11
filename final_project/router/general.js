@@ -49,7 +49,7 @@ public_users.get("/isbn/:isbn", function (req, res) {
       if (isbn > 0 && isbn <= Object.keys(books).length) {
         resolve(books[isbn]);
       } else {
-        throw Error("Invalid ISBN");
+        reject(new Error("Invalid ISBN"));
       }
     } catch (err) {
       reject(err);
@@ -72,17 +72,39 @@ public_users.get("/isbn/:isbn", function (req, res) {
 // Get book details based on author
 public_users.get("/author/:author", function (req, res) {
   const author = req.params.author;
-  let books_by_author = {};
-  for (let book of Object.values(books)) {
-    if (book.author === author) {
-      books_by_author[book.title] = book;
+
+  const promise = new Promise((resolve, reject) => {
+    try {
+      let books_by_author = {};
+      for (let book of Object.values(books)) {
+        if (book.author === author) {
+          books_by_author[book.title] = book;
+        }
+      }
+      if (Object.keys(books_by_author).length > 0) {
+        resolve(books_by_author);
+      } else {
+        reject(new Error("No books found for this author"));
+      }
+    } catch (err) {
+      reject(err);
     }
-  }
-  if (Object.keys(books_by_author).length > 0) {
-    return res.send(books_by_author);
-  } else {
-    return res.status(404).json({ message: "No books found for this author" });
-  }
+  });
+
+  promise.then(
+    (books_by_author) => {
+      return res.send(books_by_author);
+    },
+    (err) => {
+      if (err.message === "No books found for this author") {
+        return res
+          .status(404)
+          .json({ message: "No books found for this author" });
+      } else {
+        return res.status(500).json({ message: err.message });
+      }
+    }
+  );
 });
 
 // Get all books based on title
